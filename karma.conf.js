@@ -76,18 +76,35 @@ var sauceLabsLaunchers = {
 	}
 };
 
+// var localLaunchers = {
+// 	ChromeNoSandboxHeadless: {
+// 		base: 'Chrome',
+// 		flags: [
+// 			// '--no-sandbox',
+// 			// '--disable-setuid-sandbox',
+// 			// See https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md
+// 			// '--headless',
+// 			// '--disable-gpu',
+// 			// '--no-gpu',
+// 			// Without a remote debugging port, Google Chrome exits immediately.
+// 			'--remote-debugging-port=9333'
+// 		]
+// 	}
+// };
+
 var localLaunchers = {
-	ChromeNoSandboxHeadless: {
-		base: 'Chrome',
+	GamefaceBrowser: {
+		base: 'Gameface',
+		path: 'C:/Cohtml-1.20.0.1/Player/Player.exe',
 		flags: [
-			'--no-sandbox',
-			'--disable-setuid-sandbox',
-			// See https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md
-			'--headless',
-			'--disable-gpu',
-			'--no-gpu',
-			// Without a remote debugging port, Google Chrome exits immediately.
-			'--remote-debugging-port=9333'
+			// '--root', // sets the root directory for coui://
+			// '--vsync', // enables VSync; disabling VSync may freeze your computer due to the player running with thousands of FPS
+			// '--enable-complex-css', // enables support for complex CSS selectors (e.g. div > .class / a[href*="example"]
+			'--debugger-port 8080', // sets the port to which the dev tools will listen; open http://localhost:<port> in Chrome to access them. Set to -1 to disable. Defaults to 9444.
+			// '--log-verbosity debug', // tells the application how verbose the output should be; valid values are trace, debug, info, warning, assert and error. Defaults to info.
+			// '--input mouse', // tells the application what kind of input events to send; valid values are mouse and touch. Defaults to mouse.
+			'--width=700', // sets the width of the player to X pixels. If set to less than 300 the player will force it up to 300. If set to an invalid value a default of 1280 will be used.
+			'--height=500' // sets the height of the player to X pixels. If set to less than 300 the player will force it up to 300. If set to an invalid value a default of 720 will be used.
 		]
 	}
 };
@@ -255,9 +272,7 @@ function createEsbuildPlugin() {
 
 module.exports = function(config) {
 	config.set({
-		browsers: sauceLabs
-			? Object.keys(sauceLabsLaunchers)
-			: Object.keys(localLaunchers),
+		browsers: Object.keys(localLaunchers),
 
 		frameworks: ['mocha', 'chai-sinon'],
 
@@ -300,9 +315,15 @@ module.exports = function(config) {
 		browserNoActivityTimeout: 5 * 60 * 1000,
 
 		// Use only two browsers concurrently, works better with open source Sauce Labs remote testing
-		concurrency: 2,
-
-		captureTimeout: 0,
+		concurrency: 0,
+		singleRun: false,
+		client: {
+			useIframe: false,
+			runInParent: true,
+			args: ['--useIframe=false', '--runInParent=true']
+		},
+		transports: ['polling'],
+		captureTimeout: 60000,
 
 		sauceLabs: {
 			build: `CI #${process.env.GITHUB_RUN_NUMBER} (${process.env.GITHUB_RUN_ID})`,
